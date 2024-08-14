@@ -286,6 +286,7 @@ V86.prototype.continue_init = async function(emulator, options)
     settings.mac_address_translation = options.mac_address_translation;
     settings.cpuid_level = options.cpuid_level;
     settings.virtio_console = options.virtio_console;
+    settings.screen_options = options.screen_options;   /// new: added option and setting screen_options
 
     if(options.network_adapter)
     {
@@ -318,7 +319,7 @@ V86.prototype.continue_init = async function(emulator, options)
 
     if(options.screen_container)
     {
-        this.screen_adapter = new ScreenAdapter(options.screen_container, this.bus);
+        this.screen_adapter = new ScreenAdapter(options.screen_container, this.bus, options.screen_options);    /// new: 3rd argument screen_options
     }
     else if(options.screen_dummy)
     {

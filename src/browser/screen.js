@@ -6,7 +6,7 @@
  *
  * @param {BusConnector} bus
  */
-function ScreenAdapter(screen_container, bus)
+function ScreenAdapter(screen_container, bus, screen_options = undefined)     /// new: optional 3rd argument screen_options
 {
     console.assert(screen_container, "1st argument must be a DOM container");
 
@@ -357,18 +357,20 @@ function ScreenAdapter(screen_container, bus)
         graphic_screen.width = width;
         graphic_screen.height = height;
 
-        // add some scaling to tiny resolutions
-        if(width <= 640 &&
-            width * 2 < window.innerWidth * window.devicePixelRatio &&
-            height * 2 < window.innerHeight * window.devicePixelRatio)
+        if(!screen_options?.disable_autoscale)   /// new: autoscaling now optional
         {
-            base_scale = 2;
+            // add some scaling to tiny resolutions
+            if(width <= 640 &&
+                width * 2 < window.innerWidth * window.devicePixelRatio &&
+                height * 2 < window.innerHeight * window.devicePixelRatio)
+            {
+                base_scale = 2;
+            }
+            else
+            {
+                base_scale = 1;
+            }
         }
-        else
-        {
-            base_scale = 1;
-        }
-
         update_scale_graphic();
     };
 
