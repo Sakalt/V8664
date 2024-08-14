@@ -94,7 +94,7 @@ function GraphicalText(bus, vga)
     this.font_index_B = 0;
 
     /**
-     * If true then cursor_enabled_next, cursor_top_next and cursor_bottom_next were overwritten since last call to render().
+     * If true then cursor_enabled_latch, cursor_top_latch and cursor_bottom_latch were overwritten since last call to render().
      * @type{boolean}
      */
     this.cursor_attr_dirty = false;
@@ -103,22 +103,22 @@ function GraphicalText(bus, vga)
      * Latest value for cursor_enabled if cursor_attr_dirty is true
      * @type{boolean}
      */
-    this.cursor_enabled_next = false;
+    this.cursor_enabled_latch = false;
 
     /**
-     * Latest value for cursor_top_next if cursor_attr_dirty is true
+     * Latest value for cursor_top_latch if cursor_attr_dirty is true
      * @type {number}
      */
-    this.cursor_top_next = 0;
+    this.cursor_top_latch = 0;
 
     /**
-     * Latest value for cursor_bottom_next if cursor_attr_dirty is true
+     * Latest value for cursor_bottom_latch if cursor_attr_dirty is true
      * @type {number}
      */
-    this.cursor_bottom_next = 0;
+    this.cursor_bottom_latch = 0;
 
     /**
-     * If true then cursor_row_next and cursor_col_next were overwritten since last call to render().
+     * If true then cursor_row_latch and cursor_col_latch were overwritten since last call to render().
      * @type{boolean}
      */
     this.cursor_pos_dirty = false;
@@ -127,13 +127,13 @@ function GraphicalText(bus, vga)
      * Latest value for cursor_row if cursor_pos_dirty is true
      * @type {number}
      */
-    this.cursor_row_next = 0;
+    this.cursor_row_latch = 0;
 
     /**
      * Latest value for cursor_col if cursor_pos_dirty is true
      * @type {number}
      */
-    this.cursor_col_next = 0;
+    this.cursor_col_latch = 0;
 
     /**
      * Emulate cursor if true, else disable cursor
@@ -519,16 +519,16 @@ GraphicalText.prototype.set_character_map = function(reg_value)
 GraphicalText.prototype.set_cursor_pos = function(row, col)
 {
     this.cursor_pos_dirty = true;
-    this.cursor_row_next = row;
-    this.cursor_col_next = col;
+    this.cursor_row_latch = row;
+    this.cursor_col_latch = col;
 }
 
 GraphicalText.prototype.set_cursor_attr = function(start, end, visible)
 {
     this.cursor_attr_dirty = true;
-    this.cursor_enabled_next = !! visible;
-    this.cursor_top_next = start;
-    this.cursor_bottom_next = end;
+    this.cursor_enabled_latch = !! visible;
+    this.cursor_top_latch = start;
+    this.cursor_bottom_latch = end;
 }
 
 GraphicalText.prototype.render = function()
@@ -554,8 +554,7 @@ GraphicalText.prototype.render = function()
         const curr_font_width = (width_9px ? 9 : 8) * (width_double ? 2 : 1);
         const curr_font_blink_enabled = !! (curr_attribute_mode & 0b00000100);
         const curr_font_lge = !! (curr_attribute_mode & 0b00001000);
-        const curr_scan_double = !! (curr_max_scan_line & 0b10000000);
-        const curr_font_height = ((curr_max_scan_line & 0b00011111) + 1) * (curr_scan_double ? 2 : 1);
+        const curr_font_height = (curr_max_scan_line & 0b00011111) + 1;
 
         const font_data_changed = this.font_data_dirty || this.font_lge !== curr_font_lge;
         const font_size_changed = this.font_width !== curr_font_width || this.font_height !== curr_font_height;
@@ -593,13 +592,13 @@ GraphicalText.prototype.render = function()
     if(this.cursor_pos_dirty)
     {
         this.cursor_pos_dirty = false;
-        this.cursor_row_next = Math.min(this.cursor_row_next, this.txt_height-1);
-        this.cursor_col_next = Math.min(this.cursor_col_next, this.txt_width-1);
-        if(this.cursor_row !== this.cursor_row_next || this.cursor_col !== this.cursor_col_next)
+        this.cursor_row_latch = Math.min(this.cursor_row_latch, this.txt_height-1);
+        this.cursor_col_latch = Math.min(this.cursor_col_latch, this.txt_width-1);
+        if(this.cursor_row !== this.cursor_row_latch || this.cursor_col !== this.cursor_col_latch)
         {
-            this.txt_row_dirty[this.cursor_row] = this.txt_row_dirty[this.cursor_row_next] = this.txt_dirty = 1;
-            this.cursor_row = this.cursor_row_next;
-            this.cursor_col = this.cursor_col_next;
+            this.txt_row_dirty[this.cursor_row] = this.txt_row_dirty[this.cursor_row_latch] = this.txt_dirty = 1;
+            this.cursor_row = this.cursor_row_latch;
+            this.cursor_col = this.cursor_col_latch;
         }
     }
 
@@ -607,13 +606,13 @@ GraphicalText.prototype.render = function()
     if(this.cursor_attr_dirty)
     {
         this.cursor_attr_dirty = false;
-        if(this.cursor_enabled !== this.cursor_enabled_next ||
-                this.cursor_top !== this.cursor_top_next ||
-                this.cursor_bottom !== this.cursor_bottom_next)
+        if(this.cursor_enabled !== this.cursor_enabled_latch ||
+                this.cursor_top !== this.cursor_top_latch ||
+                this.cursor_bottom !== this.cursor_bottom_latch)
         {
-            this.cursor_enabled = this.cursor_enabled_next;
-            this.cursor_top = this.cursor_top_next;
-            this.cursor_bottom = this.cursor_bottom_next;
+            this.cursor_enabled = this.cursor_enabled_latch;
+            this.cursor_top = this.cursor_top_latch;
+            this.cursor_bottom = this.cursor_bottom_latch;
             this.txt_row_dirty[this.cursor_row] = this.txt_dirty = 1;
         }
     }
