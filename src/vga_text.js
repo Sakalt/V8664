@@ -584,10 +584,8 @@ GraphicalText.prototype.render = function()
     // resize screen
     if(screen_size_changed)
     {
-        const new_gfx_width = this.txt_width * this.font_width;
-        const new_gfx_height = this.txt_height * this.font_height;
-        this.gfx_width = new_gfx_width;
-        this.gfx_height = new_gfx_height;
+        this.gfx_width = this.txt_width * this.font_width;
+        this.gfx_height = this.txt_height * this.font_height;
         this.rebuild_image_data();
     }
 
@@ -621,20 +619,16 @@ GraphicalText.prototype.render = function()
     }
 
     // toggle cursor and blinking character visibility at a frequency of ~3.75hz (every 16th frame at 60fps)
-    if(this.font_blink_enabled || this.cursor_enabled)
+    if(this.frame_count % 16 === 0)
     {
-        const blink_visible_now = this.frame_count % 32 < 16;
-        if(this.blink_visible !== blink_visible_now)
+        this.blink_visible = ! this.blink_visible;
+        if(this.font_blink_enabled)
         {
-            this.blink_visible = blink_visible_now;
-            if(this.font_blink_enabled)
-            {
-                this.mark_blinking_rows_dirty();
-            }
-            if(this.cursor_enabled)
-            {
-                this.txt_row_dirty[this.cursor_row] = this.txt_dirty = 1;
-            }
+            this.mark_blinking_rows_dirty();
+        }
+        if(this.cursor_enabled)
+        {
+            this.txt_row_dirty[this.cursor_row] = this.txt_dirty = 1;
         }
     }
 
