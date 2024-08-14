@@ -443,6 +443,33 @@ VGAScreen.prototype.switch_screen_mode = function(graphical_mode)
     this.bus.send("screen-set-mode", graphical_mode || this.graphical_text);
 }
 
+VGAScreen.prototype.grab_text_content = function(keep_whitespace)
+{
+    var addr = this.start_address << 1;
+    const split_screen_row = this.scan_line_to_screen_row(this.line_compare);
+    const row_offset = Math.max(0, (this.offset_register * 2 - this.max_cols) * 2);
+    const text_rows = [];
+
+    for(var row = 0; row < this.max_rows; row++)
+    {
+        if(row === split_screen_row)
+        {
+            addr = 0;
+        }
+
+        let line = '';
+        for(var col = 0; col < this.max_cols; col++, addr += 2)
+        {
+            line += String.fromCodePoint(this.vga_memory[addr]);
+        }
+
+        text_rows.push(keep_whitespace ? line : line.trimEnd());
+        addr += row_offset;
+    }
+
+    return text_rows;
+}
+
 VGAScreen.prototype.get_state = function()
 {
     var state = [];
