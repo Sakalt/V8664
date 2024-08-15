@@ -1960,12 +1960,13 @@ VGAScreen.prototype.port3D5_write = function(value)
             break;
         case 0x9:
             dbg_log("3D5 / max scan line write: " + h(value), LOG_VGA);
+            var previous_max_scan_line = this.max_scan_line;
             this.max_scan_line = value;
             this.line_compare = (this.line_compare & 0x1FF) | (value << 3 & 0x200);
 
             var previous_vertical_blank_start = this.vertical_blank_start;
             this.vertical_blank_start = (this.vertical_blank_start & 0x1FF) | (value << 4 & 0x200);
-            if(previous_vertical_blank_start !== this.vertical_blank_start)
+            if(previous_max_scan_line !== this.max_scan_line || previous_vertical_blank_start !== this.vertical_blank_start)
             {
                 this.update_vga_size();
             }
