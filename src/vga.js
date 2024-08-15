@@ -1966,7 +1966,7 @@ VGAScreen.prototype.port3D5_write = function(value)
 
             var previous_vertical_blank_start = this.vertical_blank_start;
             this.vertical_blank_start = (this.vertical_blank_start & 0x1FF) | (value << 4 & 0x200);
-            if(previous_max_scan_line !== this.max_scan_line || previous_vertical_blank_start !== this.vertical_blank_start)
+            if(((previous_max_scan_line ^ this.max_scan_line) & 0x9F) || previous_vertical_blank_start !== this.vertical_blank_start)
             {
                 this.update_vga_size();
             }
