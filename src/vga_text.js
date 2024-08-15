@@ -254,7 +254,7 @@ GraphicalText.prototype.rebuild_font_bitmap = function(width_9px, width_double)
                 }
                 if(width_9px)
                 {
-                    copy_bit(font_lge && i_chr >= 0xC0 && i_chr <= 0xDF && (line_bits & 0x80) ? 1 : 0);
+                    copy_bit(font_lge && i_chr >= 0xC0 && i_chr <= 0xDF && line_bits & 1 ? 1 : 0);
                 }
             }
         }
