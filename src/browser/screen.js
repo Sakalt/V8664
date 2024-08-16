@@ -391,7 +391,10 @@ function ScreenAdapter(screen_container, bus, screen_options = undefined)
 
     function update_scale_graphic()
     {
-        elem_set_scale(graphic_screen, scale_x * base_scale, scale_y * base_scale, false);
+        if(!screen_options?.disable_autoscale)
+        {
+            elem_set_scale(graphic_screen, scale_x * base_scale, scale_y * base_scale, false);
+        }
     }
 
     function elem_set_scale(elem, scale_x, scale_y, use_scale)
