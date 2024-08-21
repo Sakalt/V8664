@@ -5,8 +5,9 @@
  * @constructor
  *
  * @param {BusConnector} bus
+ * @param {Object} screen_options
  */
-function ScreenAdapter(screen_container, bus, screen_options = undefined)
+function ScreenAdapter(screen_container, bus, screen_options)
 {
     console.assert(screen_container, "1st argument must be a DOM container");
 

@@ -64,8 +64,9 @@ var VGA_HOST_MEMORY_SPACE_SIZE = Uint32Array.from([
  * @param {CPU} cpu
  * @param {BusConnector} bus
  * @param {number} vga_memory_size
+ * @param {Object} screen_options
  */
-function VGAScreen(cpu, bus, vga_memory_size, screen_options = undefined)
+function VGAScreen(cpu, bus, vga_memory_size, screen_options)
 {
     this.cpu = cpu;
 
