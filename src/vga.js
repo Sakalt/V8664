@@ -417,7 +417,7 @@ function VGAScreen(cpu, bus, vga_memory_size, screen_options)
 
     cpu.devices.pci.register_device(this);
 
-    setTimeout(() => { me.switch_screen_mode(this.graphical_mode); }, 0);
+    setTimeout(() => { this.switch_screen_mode(this.graphical_mode); }, 0);
 }
 
 /* function switch_screen_mode(): 3-state screen mode: text, graphical-text or graphical
