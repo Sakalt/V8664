@@ -552,8 +552,8 @@ GraphicalText.prototype.render = function()
         const width_9px = !! (curr_clocking_mode & 0x01);
         const width_double = !! (curr_clocking_mode & 0x08);
         const curr_font_width = (width_9px ? 9 : 8) * (width_double ? 2 : 1);
-        const curr_font_blink_enabled = !! (curr_attribute_mode & 0b00000100);
-        const curr_font_lge = !! (curr_attribute_mode & 0b00001000);
+        const curr_font_blink_enabled = !! (curr_attribute_mode & 0b00001000);
+        const curr_font_lge = !! (curr_attribute_mode & 0b00000100);
         const curr_font_height = (curr_max_scan_line & 0b00011111) + 1;
 
         const font_data_changed = this.font_data_dirty || this.font_lge !== curr_font_lge;
