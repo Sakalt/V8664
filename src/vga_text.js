@@ -339,6 +339,8 @@ GraphicalText.prototype.render_dirty_rows = function()
     const font_bitmap = this.font_bitmap;
     const font_size = this.font_width * this.font_height;
     const font_A_offset = this.font_index_A * 256;
+    const font_B_offset = this.font_index_B * 256;
+    const font_AB_enabled = font_A_offset !== font_B_offset;
     const font_blink_enabled = this.font_blink_enabled;
     const blink_visible = this.blink_visible;
     const cursor_visible = this.cursor_enabled && blink_visible;
@@ -365,7 +367,7 @@ GraphicalText.prototype.render_dirty_rows = function()
     // int, current cursor linear position in canvas coordinates (top left of row/col)
     const cursor_gfx_i = (this.cursor_row * this.gfx_width * this.font_height + this.cursor_col * this.font_width) * 4;
 
-    let txt_i, chr, chr_color, chr_bg_rgba, chr_fg_rgba, chr_blinking;
+    let txt_i, chr, chr_attr, chr_bg_rgba, chr_fg_rgba, chr_blinking, chr_font_ofs;
     let fg, bg, fg_r=0, fg_g=0, fg_b=0, bg_r=0, bg_g=0, bg_b=0;
     let gfx_i, gfx_end_y, gfx_end_x, glyph_i;
     let draw_cursor, gfx_ic;
@@ -391,10 +393,11 @@ GraphicalText.prototype.render_dirty_rows = function()
         for(col = 0; col < txt_width; ++col, txt_i += 2, gfx_i += gfx_col_step)
         {
             chr = vga_memory[txt_i];
-            chr_color = vga_memory[txt_i | 1];
-            chr_blinking = font_blink_enabled && (chr_color & 1 << 7);
-            chr_bg_rgba = palette[chr_color >> 4 & bg_color_mask];
-            chr_fg_rgba = palette[chr_color & 0xF];
+            chr_attr = vga_memory[txt_i | 1];
+            chr_blinking = font_blink_enabled && chr_attr & 0x80;
+            chr_font_ofs = font_AB_enabled ? (chr_attr & 0x8 ? font_A_offset : font_B_offset) : font_A_offset;
+            chr_bg_rgba = palette[chr_attr >> 4 & bg_color_mask];
+            chr_fg_rgba = palette[chr_attr & 0xF];
 
             if(bg !== chr_bg_rgba)
             {
@@ -423,7 +426,7 @@ GraphicalText.prototype.render_dirty_rows = function()
 
             draw_cursor = cursor_visible && cursor_gfx_i === gfx_i;
 
-            glyph_i = (font_A_offset + chr) * font_size;    // TODO: font index A/B
+            glyph_i = (chr_font_ofs + chr) * font_size;
 
             gfx_end_y = gfx_i + gfx_row_size;
             for(; gfx_i < gfx_end_y; gfx_i += gfx_line_step)
@@ -501,17 +504,21 @@ GraphicalText.prototype.set_size = function(rows, cols)
     }
 }
 
-GraphicalText.prototype.set_character_map = function(reg_value)
+GraphicalText.prototype.set_character_map = function(char_map_select)
 {
-    const vga_index_B = (reg_value & 0b11) | ((reg_value >> 2) & 0b100);        // 0, 1, 4: Character Set B Select
-    const vga_index_A = ((reg_value >> 2) & 0b11) | ((reg_value >> 3) & 0b100); // 2, 3, 5: Character Set A Select
-    const linear_index_map = [0, 2, 4, 6, 1, 3, 5, 7];                          // maps i-th vga font index to its linear font index
-    const index_A = linear_index_map[vga_index_A];
-    const index_B = linear_index_map[vga_index_B];
-    if(this.font_index_A !== index_A || this.font_index_B !== index_B)
+    // bits 2, 3 and 5 (LSB to MSB): VGA font page index of font A
+    // bits 0, 1 and 4: VGA font page index of font B
+    // linear_index_map[] maps VGA's non-liner font page index to linear index
+    const linear_index_map = [0, 2, 4, 6, 1, 3, 5, 7];
+    const vga_index_A = ((char_map_select & 0b1100) >> 2) | ((char_map_select & 0b100000) >> 3);
+    const vga_index_B = (char_map_select & 0b11) | ((char_map_select & 0b10000) >> 2);
+    const font_index_A = linear_index_map[vga_index_A];
+    const font_index_B = linear_index_map[vga_index_B];
+
+    if(this.font_index_A !== font_index_A || this.font_index_B !== font_index_B)
     {
-        this.font_index_A = index_A;
-        this.font_index_B = index_B;
+        this.font_index_A = font_index_A;
+        this.font_index_B = font_index_B;
         this.redraw();
     }
 }
