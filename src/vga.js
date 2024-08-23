@@ -409,7 +409,7 @@ function VGAScreen(cpu, bus, vga_memory_size, screen_options)
         function(addr, value) { me.vga_memory_write(addr, value); }
     );
 
-    if(!! screen_options?.use_graphical_text)
+    if(screen_options.use_graphical_text)
     {
         this.graphical_text = new GraphicalText(bus, me);
     }
