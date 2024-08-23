@@ -691,8 +691,9 @@ VGAScreen.prototype.vga_memory_read = function(addr)
         var plane = this.plane_read;
         if(!this.graphical_mode)
         {
-            // We currently put all text data linearly
-            plane = 0;
+            // We store all text data linearly and font data in plane 2.
+            // TODO: works well for planes 0 and 2, but what about plane 1?
+            plane &= 0x3;
         }
         else if(this.sequencer_memory_mode & 0x8)
         {
