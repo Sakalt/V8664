@@ -332,23 +332,22 @@ function VGAScreen(cpu, bus, vga_memory_size, screen_options)
 
     io.register_read(0x3CC, this, this.port3CC_read);
 
-    io.register_write(0x3D4, this, this.port3D4_write, value => {
-        this.port3D4_write(value & 0xFF);
-        this.port3D5_write(value >> 8 & 0xFF);
-    });
-    io.register_write(0x3D5, this, this.port3D5_write, value => {
-        dbg_log("16-bit write to 3D5: " + h(value, 4), LOG_VGA);
-        this.port3D5_write(value & 0xFF);
-    });
+    io.register_write(0x3D4, this, this.port3D4_write, this.port3D4_write16);
+    io.register_write(0x3D5, this, this.port3D5_write, this.port3D5_write16);
 
     io.register_read(0x3D4, this, this.port3D4_read);
-    io.register_read(0x3D5, this, this.port3D5_read, () => {
-        dbg_log("Warning: 16-bit read from 3D5", LOG_VGA);
-        return this.port3D5_read();
-    });
+    io.register_read(0x3D5, this, this.port3D5_read, this.port3D5_read16);
+
+    // use same handlers for monochrome text-mode's alternate port addresses 0x3B4/0x3B5 as for the regular addresses (0x3D4/0x3D5)
+    io.register_write(0x3B4, this, this.port3D4_write, this.port3D4_write16);
+    io.register_write(0x3B5, this, this.port3D5_write, this.port3D5_write16);
+
+    io.register_read(0x3B4, this, this.port3D4_read);
+    io.register_read(0x3B5, this, this.port3D5_read, this.port3D5_read16);
 
     io.register_read(0x3CA, this, function() { dbg_log("3CA read", LOG_VGA); return 0; });
 
+    // use same handler for monochrome text-mode's alternate port address 0x3BA as for its regular address (0x3DA)
     io.register_read(0x3DA, this, this.port3DA_read);
     io.register_read(0x3BA, this, this.port3DA_read);
 
@@ -1905,6 +1904,12 @@ VGAScreen.prototype.port3D4_write = function(register)
     this.index_crtc = register;
 };
 
+VGAScreen.prototype.port3D4_write16 = function(register)
+{
+    this.port3D4_write(register & 0xFF);
+    this.port3D5_write(register >> 8 & 0xFF);
+};
+
 VGAScreen.prototype.port3D4_read = function()
 {
     dbg_log("3D4 read / crtc index: " + this.index_crtc, LOG_VGA);
@@ -2103,6 +2108,12 @@ VGAScreen.prototype.port3D5_write = function(value)
 
 };
 
+VGAScreen.prototype.port3D5_write16 = function(register)
+{
+    dbg_log("16-bit write to 3D5: " + h(register, 4), LOG_VGA);
+    this.port3D5_write(register & 0xFF);
+};
+
 VGAScreen.prototype.port3D5_read = function()
 {
     dbg_log("3D5 read " + h(this.index_crtc), LOG_VGA);
@@ -2156,6 +2167,12 @@ VGAScreen.prototype.port3D5_read = function()
     {
         return 0;
     }
+};
+
+VGAScreen.prototype.port3D5_read16 = function()
+{
+    dbg_log("Warning: 16-bit read from 3D5", LOG_VGA);
+    return this.port3D5_read();
 };
 
 VGAScreen.prototype.port3DA_read = function()
