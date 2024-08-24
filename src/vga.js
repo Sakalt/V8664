@@ -441,7 +441,7 @@ VGAScreen.prototype.switch_screen_mode = function(graphical_mode)
     }
 
     this.bus.send("screen-set-mode", graphical_mode || this.graphical_text);
-}
+};
 
 VGAScreen.prototype.grab_text_content = function(keep_whitespace)
 {
@@ -457,7 +457,7 @@ VGAScreen.prototype.grab_text_content = function(keep_whitespace)
             addr = 0;
         }
 
-        let line = '';
+        let line = "";
         for(var col = 0; col < this.max_cols; col++, addr += 2)
         {
             line += String.fromCodePoint(this.vga_memory[addr]);
@@ -468,7 +468,7 @@ VGAScreen.prototype.grab_text_content = function(keep_whitespace)
     }
 
     return text_rows;
-}
+};
 
 VGAScreen.prototype.get_state = function()
 {

@@ -261,7 +261,7 @@ GraphicalText.prototype.rebuild_font_bitmap = function(width_9px, width_double)
     }
 
     return dst_bitmap;
-}
+};
 
 GraphicalText.prototype.resize_canvas = function()
 {
@@ -277,7 +277,7 @@ GraphicalText.prototype.resize_canvas = function()
         this.txt_width, this.txt_height,
         this.font_width, this.font_height
     ]);
-}
+};
 
 GraphicalText.prototype.rebuild_image_data = function()
 {
@@ -290,7 +290,7 @@ GraphicalText.prototype.rebuild_image_data = function()
     this.gfx_data = gfx_data;
     this.image_data = new ImageData(this.gfx_data, this.gfx_width, this.gfx_height);
     this.resize_canvas();
-}
+};
 
 GraphicalText.prototype.mark_blinking_rows_dirty = function()
 {
@@ -326,7 +326,7 @@ GraphicalText.prototype.mark_blinking_rows_dirty = function()
             }
         }
     }
-}
+};
 
 GraphicalText.prototype.render_dirty_rows = function()
 {
@@ -409,7 +409,7 @@ GraphicalText.prototype.render_dirty_rows = function()
 
             if(chr_blinking && ! blink_visible)
             {
-                if (fg !== bg) {
+                if(fg !== bg) {
                     fg = bg;
                     fg_r = bg_r;
                     fg_g = bg_g;
@@ -466,7 +466,7 @@ GraphicalText.prototype.render_dirty_rows = function()
             }
         }
     }
-}
+};
 
 //
 // Public methods
@@ -476,7 +476,7 @@ GraphicalText.prototype.redraw = function()
 {
     this.txt_row_dirty.fill(1);
     this.txt_dirty = 1;
-}
+};
 
 GraphicalText.prototype.invalidate_row = function(row)
 {
@@ -484,12 +484,12 @@ GraphicalText.prototype.invalidate_row = function(row)
     {
         this.txt_row_dirty[row] = this.txt_dirty = 1;
     }
-}
+};
 
 GraphicalText.prototype.invalidate_font_shape = function()
 {
     this.font_data_dirty = true;
-}
+};
 
 GraphicalText.prototype.set_size = function(rows, cols)
 {
@@ -502,7 +502,7 @@ GraphicalText.prototype.set_size = function(rows, cols)
         this.txt_row_dirty = new Uint8Array(this.txt_height);
         this.redraw();
     }
-}
+};
 
 GraphicalText.prototype.set_character_map = function(char_map_select)
 {
@@ -521,14 +521,14 @@ GraphicalText.prototype.set_character_map = function(char_map_select)
         this.font_index_B = font_index_B;
         this.redraw();
     }
-}
+};
 
 GraphicalText.prototype.set_cursor_pos = function(row, col)
 {
     this.cursor_pos_dirty = true;
     this.cursor_row_latch = row;
     this.cursor_col_latch = col;
-}
+};
 
 GraphicalText.prototype.set_cursor_attr = function(start, end, visible)
 {
@@ -536,7 +536,7 @@ GraphicalText.prototype.set_cursor_attr = function(start, end, visible)
     this.cursor_enabled_latch = !! visible;
     this.cursor_top_latch = start;
     this.cursor_bottom_latch = end;
-}
+};
 
 GraphicalText.prototype.render = function()
 {
@@ -647,4 +647,4 @@ GraphicalText.prototype.render = function()
     }
 
     return this.image_data;
-}
+};
