@@ -285,6 +285,7 @@ function VGAScreen(cpu, bus, vga_memory_size, screen_options)
     this.sequencer_memory_mode = 0;
     this.clocking_mode = 0;
     this.graphics_index = -1;
+    this.character_map_select = 0;
 
     this.plane_read = 0; // value 0-3, which plane to read
     this.planar_mode = 0;
@@ -537,6 +538,7 @@ VGAScreen.prototype.get_state = function()
     state[60] = this.line_compare;
     state[61] = this.pixel_buffer;
     state[62] = this.dac_mask;
+    state[63] = this.character_map_select;
 
     return state;
 };
@@ -606,6 +608,7 @@ VGAScreen.prototype.set_state = function(state)
     this.line_compare = state[60];
     state[61] && this.pixel_buffer.set(state[61]);
     this.dac_mask = state[62] === undefined ? 0xFF : state[62];
+    this.character_map_select = state[63] === undefined ? 0 : state[63];
 
     this.switch_screen_mode(this.graphical_mode);
 
@@ -1652,19 +1655,19 @@ VGAScreen.prototype.port3C5_write = function(value)
             dbg_log("plane write mask: " + h(value), LOG_VGA);
             var previous_plane_write_bm = this.plane_write_bm;
             this.plane_write_bm = value;
-            if(this.graphical_text && previous_plane_write_bm !== 0xf && (previous_plane_write_bm & 0x4) && !(value & 0x4))
+            if(this.graphical_text && previous_plane_write_bm !== 0xf && (previous_plane_write_bm & 0x4) && !(this.plane_write_bm & 0x4))
             {
                 // End of font plane 2 write access (initial value of plane_write_bm assumed to be 0xf)
-                dbg_log("plane write mask: " + h(value), LOG_VGA);
                 this.graphical_text.invalidate_font_shape();
             }
             break;
         case 0x03:
-            // Write to Character Map Select Register
-            if(this.graphical_text)
+            dbg_log("character map select: " + h(value), LOG_VGA);
+            var previous_character_map_select = this.character_map_select;
+            this.character_map_select = value;
+            if(this.graphical_text && previous_character_map_select !== this.character_map_select)
             {
-                dbg_log("character map select: " + h(value), LOG_VGA);
-                this.graphical_text.set_character_map(value);
+                this.graphical_text.set_character_map(this.character_map_select);
             }
             break;
         case 0x04:
@@ -1686,6 +1689,8 @@ VGAScreen.prototype.port3C5_read = function()
             return this.clocking_mode;
         case 0x02:
             return this.plane_write_bm;
+        case 0x03:
+            return this.character_map_select;
         case 0x04:
             return this.sequencer_memory_mode;
         case 0x06:
