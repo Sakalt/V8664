@@ -182,7 +182,7 @@ function ScreenAdapter(screen_container, bus, screen_options)
 
         if(is_graphical)
         {
-            this.set_size_graphical(640, 400, 640, 400); // assume 80x25 with 8x16 font
+            this.set_size_graphical(720, 400, 720, 400); // assume 80x25 with 9x16 font
         }
         else
         {
