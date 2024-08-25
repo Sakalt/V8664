@@ -556,7 +556,7 @@ GraphicalText.prototype.render = function()
             this.vga_attribute_mode !== curr_attribute_mode ||
             this.vga_max_scan_line !== curr_max_scan_line)
     {
-        const width_9px = !! (curr_clocking_mode & 0x01);
+        const width_9px = ! (curr_clocking_mode & 0x01);
         const width_double = !! (curr_clocking_mode & 0x08);
         const curr_font_width = (width_9px ? 9 : 8) * (width_double ? 2 : 1);
         const curr_font_blink_enabled = !! (curr_attribute_mode & 0b00001000);
