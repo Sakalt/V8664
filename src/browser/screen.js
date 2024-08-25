@@ -48,7 +48,10 @@ function ScreenAdapter(screen_container, bus, screen_options)
         text_mode_width,
 
         // number of rows
-        text_mode_height;
+        text_mode_height,
+
+        // do no modify CSS width, height and transform of HTML canvas if true
+        disable_autoscale = screen_options?.disable_autoscale;
 
     const CHARACTER_INDEX = 0;
     const BLINKING_INDEX = 1;
@@ -358,19 +361,16 @@ function ScreenAdapter(screen_container, bus, screen_options)
         graphic_screen.width = width;
         graphic_screen.height = height;
 
-        if(!screen_options?.disable_autoscale)
+        // add some scaling to tiny resolutions
+        if(width <= 640 &&
+            width * 2 < window.innerWidth * window.devicePixelRatio &&
+            height * 2 < window.innerHeight * window.devicePixelRatio)
         {
-            // add some scaling to tiny resolutions
-            if(width <= 640 &&
-                width * 2 < window.innerWidth * window.devicePixelRatio &&
-                height * 2 < window.innerHeight * window.devicePixelRatio)
-            {
-                base_scale = 2;
-            }
-            else
-            {
-                base_scale = 1;
-            }
+            base_scale = 2;
+        }
+        else
+        {
+            base_scale = 1;
         }
         update_scale_graphic();
     };
@@ -392,7 +392,7 @@ function ScreenAdapter(screen_container, bus, screen_options)
 
     function update_scale_graphic()
     {
-        if(!screen_options?.disable_autoscale)
+        if(!disable_autoscale)
         {
             elem_set_scale(graphic_screen, scale_x * base_scale, scale_y * base_scale, false);
         }
