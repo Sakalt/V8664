@@ -360,6 +360,8 @@ function ScreenAdapter(screen_container, bus, screen_options)
 
         graphic_screen.width = width;
         graphic_screen.height = height;
+        // graphic_context loses its configuration when its graphic_screen gets resized, reinitialize
+        graphic_context.imageSmoothingEnabled = false;
 
         // add some scaling to tiny resolutions
         if(width <= 640 &&
