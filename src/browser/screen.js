@@ -5,8 +5,9 @@
  * @constructor
  *
  * @param {BusConnector} bus
+ * @param {Object} screen_options
  */
-function ScreenAdapter(screen_container, bus)
+function ScreenAdapter(screen_container, bus, screen_options)
 {
     console.assert(screen_container, "1st argument must be a DOM container");
 
@@ -35,7 +36,7 @@ function ScreenAdapter(screen_container, bus)
         changed_rows,
 
         // are we in graphical mode now?
-        is_graphical = false,
+        is_graphical = screen_options?.use_graphical_text,
 
         // Index 0: ASCII code
         // Index 1: Blinking
@@ -47,7 +48,10 @@ function ScreenAdapter(screen_container, bus)
         text_mode_width,
 
         // number of rows
-        text_mode_height;
+        text_mode_height,
+
+        // do no modify CSS width, height and transform of HTML canvas if true
+        disable_autoscale = screen_options?.disable_autoscale;
 
     const CHARACTER_INDEX = 0;
     const BLINKING_INDEX = 1;
@@ -128,9 +132,6 @@ function ScreenAdapter(screen_container, bus)
     cursor_element.style.width = "7px";
     cursor_element.style.display = "inline-block";
 
-    text_screen.style.display = "block";
-    graphic_screen.style.display = "none";
-
     this.bus = bus;
 
     bus.register("screen-set-mode", function(data)
@@ -175,9 +176,18 @@ function ScreenAdapter(screen_container, bus)
 
     this.init = function()
     {
-        // not necessary, because this gets initialized by the bios early,
-        // but nicer to look at
-        this.set_size_text(80, 25);
+        // initialize with mode and size presets as expected by the bios
+        // to avoid flickering during early startup
+        this.set_mode(is_graphical);
+
+        if(is_graphical)
+        {
+            this.set_size_graphical(720, 400, 720, 400); // assume 80x25 with 9x16 font
+        }
+        else
+        {
+            this.set_size_text(80, 25);
+        }
 
         this.timer();
     };
@@ -356,6 +366,8 @@ function ScreenAdapter(screen_container, bus)
 
         graphic_screen.width = width;
         graphic_screen.height = height;
+        // graphic_context loses its configuration when its graphic_screen gets resized, reinitialize
+        graphic_context.imageSmoothingEnabled = false;
 
         // add some scaling to tiny resolutions
         if(width <= 640 &&
@@ -368,7 +380,6 @@ function ScreenAdapter(screen_container, bus)
         {
             base_scale = 1;
         }
-
         update_scale_graphic();
     };
 
@@ -389,7 +400,10 @@ function ScreenAdapter(screen_container, bus)
 
     function update_scale_graphic()
     {
-        elem_set_scale(graphic_screen, scale_x * base_scale, scale_y * base_scale, false);
+        if(!disable_autoscale)
+        {
+            elem_set_scale(graphic_screen, scale_x * base_scale, scale_y * base_scale, false);
+        }
     }
 
     function elem_set_scale(elem, scale_x, scale_y, use_scale)
